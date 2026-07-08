@@ -1,0 +1,11 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Edit these for your environment, or use MSW mocks by setting true.
+        VITE_API_URL: /api
+        VITE_ENABLE_MOCKS: "true"
+    ports:
+      - "8080:80"
+    restart: unless-stopped

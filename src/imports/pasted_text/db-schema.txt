@@ -1,0 +1,288 @@
+Enum internal_role {
+  staff
+  admin
+}
+
+Enum staff_role {
+  pilot
+  copilot
+  cabin_crew
+  manager
+  technician
+}
+
+Enum payment_method {
+  credit_card
+  debit_card
+  paypal
+  aba_pay
+  acleda
+  wing
+  cash
+}
+
+Enum trip_type {
+  one_way
+  round_trip
+}
+
+Enum flight_status {
+  scheduled
+  boarding
+  delayed
+  departed
+  arrived
+  cancelled
+}
+
+Enum booking_status {
+  pending
+  confirmed
+  cancelled
+}
+
+Enum payment_status {
+  pending
+  paid
+  failed
+  refunded
+}
+
+Enum seat_class {
+  economy
+  business
+  first_class
+}
+
+Enum aircraft_status {
+  available
+  assigned
+  maintenance
+  retired
+}
+
+Enum gate_status {
+  available
+  occupied
+  maintenance
+  closed
+}
+
+Enum availability_status {
+  available
+  unavailable
+  on_leave
+}
+
+Enum maintenance_type {
+  routine
+  emergency
+  inspection
+}
+
+Table users {
+  id int [pk, increment]
+  full_name varchar [not null]
+  email varchar [not null, unique]
+  password_hash varchar [not null]
+  phone varchar
+  is_active boolean [default: true]
+  created_at timestamp
+}
+
+Table internal_users {
+  id int [pk, increment]
+  full_name varchar [not null]
+  email varchar [not null, unique]
+  password_hash varchar [not null]
+  phone varchar
+  role internal_role [not null]
+  is_active boolean [default: true]
+  created_at timestamp
+}
+
+Table passenger_profiles {
+  id int [pk, increment]
+  user_id int [not null, unique, ref: > users.id]
+  passport_number varchar
+  nationality varchar
+  date_of_birth date
+  special_needs text
+}
+
+Table staff {
+  id int [pk, increment]
+  internal_user_id int [not null, unique, ref: > internal_users.id]
+  employee_id varchar [not null, unique]
+  staff_role staff_role [not null]
+  license_number varchar
+  license_expiry date
+  join_date date
+}
+
+Table airports {
+  id int [pk, increment]
+  iata_code varchar [not null, unique]
+  name varchar [not null]
+  city varchar [not null]
+  country varchar [not null]
+}
+
+Table gates {
+  id int [pk, increment]
+  airport_id int [not null, ref: > airports.id]
+  gate_code varchar [not null]
+  status gate_status [default: 'available']
+}
+
+Table routes {
+  id int [pk, increment]
+  origin_airport_id int [not null, ref: > airports.id]
+  destination_airport_id int [not null, ref: > airports.id]
+  distance_km int
+  estimated_duration int
+  is_active boolean [default: true]
+}
+
+Table aircraft {
+  id int [pk, increment]
+  registration_number varchar [not null, unique]
+  model varchar [not null]
+  capacity int [not null]
+  manufacturer varchar
+  flight_hours int [default: 0]
+  status aircraft_status [default: 'available']
+}
+
+Table aircraft_seats {
+  id int [pk, increment]
+  aircraft_id int [not null, ref: > aircraft.id]
+  seat_number varchar [not null]
+  seat_class seat_class [not null]
+  is_window boolean
+  is_aisle boolean
+}
+
+Table flights {
+  id int [pk, increment]
+  flight_number varchar [not null, unique]
+  route_id int [not null, ref: > routes.id]
+  aircraft_id int [not null, ref: > aircraft.id]
+  gate_id int [ref: > gates.id]
+  departure_time timestamp [not null]
+  arrival_time timestamp [not null]
+  status flight_status [default: 'scheduled']
+  base_price decimal(10,2)
+  created_by int [ref: > internal_users.id]
+}
+
+Table flight_seats {
+  id int [pk, increment]
+  flight_id int [not null, ref: > flights.id]
+  aircraft_seat_id int [not null, ref: > aircraft_seats.id]
+  is_available boolean [default: true]
+}
+
+Table flight_class_prices {
+  id int [pk, increment]
+  flight_id int [not null, ref: > flights.id]
+  seat_class seat_class [not null]
+  price decimal(10,2) [not null]
+}
+
+Table flight_status_logs {
+  id int [pk, increment]
+  flight_id int [not null, ref: > flights.id]
+  old_status flight_status
+  new_status flight_status [not null]
+  reason text
+  changed_by int [ref: > internal_users.id]
+  changed_at timestamp
+}
+
+Table bookings {
+  id int [pk, increment]
+  booking_ref varchar [not null, unique]
+  passenger_id int [not null, ref: > passenger_profiles.id]
+  flight_id int [not null, ref: > flights.id]
+  trip_type trip_type [not null]
+  return_flight_id int [ref: > flights.id]
+  status booking_status [default: 'pending']
+  booked_at timestamp
+}
+
+Table booking_passengers {
+  id int [pk, increment]
+  booking_id int [not null, ref: > bookings.id]
+  passenger_id int [not null, ref: > passenger_profiles.id]
+  flight_seat_id int [ref: > flight_seats.id]
+  seat_class seat_class [not null]
+  special_request text
+}
+
+Table payments {
+  id int [pk, increment]
+  booking_id int [not null, ref: > bookings.id]
+  amount decimal(10,2) [not null]
+  payment_method ENUM(payment_method)
+  payment_status payment_status [default: 'pending']
+  transaction_ref varchar [unique]
+  paid_at timestamp
+}
+
+Table tickets {
+  id int [pk, increment]
+  booking_id int [not null, ref: > bookings.id]
+  ticket_number varchar [not null, unique]
+  issued_at timestamp
+  ticket_code varchar [not null]
+}
+
+Table user_sessions {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  internal_user_id int [ref: > internal_users.id]
+  session_token varchar [not null, unique]
+  login_at timestamp
+  expires_at timestamp
+  logout_at timestamp
+  is_active boolean [default: true]
+}
+
+Table staff_availability {
+  id int [pk, increment]
+  staff_id int [not null, ref: > staff.id]
+  available_date date [not null]
+  status availability_status [not null]
+  reason varchar
+}
+
+Table crew_assignments {
+  id int [pk, increment]
+  flight_id int [not null, ref: > flights.id]
+  staff_id int [not null, ref: > staff.id]
+  assigned_role staff_role [not null]
+  assigned_by int [ref: > internal_users.id]
+  assigned_at timestamp
+}
+
+Table maintenance_schedules {
+  id int [pk, increment]
+  aircraft_id int [not null, ref: > aircraft.id]
+  maintenance_type maintenance_type [not null]
+  scheduled_date date [not null]
+  end_date date
+  technician_id int [ref: > staff.id]
+  is_completed boolean [default: false]
+}
+
+Table maintenance_detail {
+  id int [pk, increment]
+  schedule_id int [not null, ref: > maintenance_schedules.id]
+  aircraft_id int [not null, ref: > aircraft.id]
+  work_done text
+  parts_used text
+  technician_notes text
+  technician_id int [ref: > staff.id]
+  logged_at timestamp
+}
