@@ -3,9 +3,19 @@ services:
     build:
       context: .
       args:
-        # Edit these for your environment, or use MSW mocks by setting true.
+        # Relative "/api" is reverse-proxied to the backend by nginx (see
+        # nginx.conf), so the frontend and API share one origin (no CORS).
+        # Set VITE_ENABLE_MOCKS to "true" to build a self-contained demo image
+        # that uses the in-browser MSW mock instead of a real backend.
         VITE_API_URL: /api
-        VITE_ENABLE_MOCKS: "true"
+        VITE_ENABLE_MOCKS: "false"
     ports:
-      - "8080:80"
+      # Host 8080 is taken by the Laravel backend's nginx, so serve the SPA on
+      # 5173 instead. The /api proxy below reaches the backend on :8080.
+      - "5173:80"
+    # Lets the nginx container reach the host's backend on :8000. Docker Desktop
+    # (Mac/Windows) provides host.docker.internal automatically; this mapping
+    # makes it work on Linux hosts too.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
