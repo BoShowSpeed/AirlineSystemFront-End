@@ -11,6 +11,19 @@ export function homeFor(role: UserRole): string {
   return '/dashboard';
 }
 
+/** The role-specific sign-in routes. */
+export const AUTH_PATHS = ['/auth', '/staff/login', '/admin/login'];
+
+/**
+ * The sign-in page to send an unauthenticated visitor to, based on the roles a
+ * route requires, so they land on the portal that can actually admit them.
+ */
+export function loginPathFor(roles?: UserRole[]): string {
+  if (roles?.includes('admin')) return '/admin/login';
+  if (roles?.includes('staff')) return '/staff/login';
+  return '/auth?mode=signin';
+}
+
 interface Props {
   /** Allowed roles. Omit to allow any authenticated user. */
   roles?: UserRole[];
@@ -36,7 +49,7 @@ export function ProtectedRoute({ roles, children }: Props) {
   }
 
   if (!user) {
-    return <Navigate to="/auth?mode=signin" state={{ from: location }} replace />;
+    return <Navigate to={loginPathFor(roles)} state={{ from: location }} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {

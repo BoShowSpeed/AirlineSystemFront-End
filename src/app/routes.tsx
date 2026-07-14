@@ -26,7 +26,9 @@ export const router = createBrowserRouter([
       // Public
       { index: true, Component: Landing },
       { path: 'search', Component: SearchResults },
-      { path: 'auth', Component: AuthPage },
+      { path: 'auth', element: <AuthPage variant="passenger" /> },
+      { path: 'staff/login', element: <AuthPage variant="staff" /> },
+      { path: 'admin/login', element: <AuthPage variant="admin" /> },
 
       // Passenger-only booking area
       { path: 'dashboard', element: <ProtectedRoute roles={['passenger']}><PassengerDashboard /></ProtectedRoute> },
