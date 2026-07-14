@@ -36,6 +36,18 @@ export function useFlightSearch(params: SearchParams | null) {
   });
 }
 
+/**
+ * Query hook listing every flight (no search filter). Backed by
+ * `/flights/search` with no params, which the backend returns already shaped
+ * as `Flight[]`. Used by the admin dashboard and flight management pages.
+ */
+export function useFlights() {
+  return useQuery({
+    queryKey: ['flights', 'all'],
+    queryFn: () => searchFlights({}),
+  });
+}
+
 export function useFlight(id: string | undefined) {
   return useQuery({
     queryKey: ['flights', id],

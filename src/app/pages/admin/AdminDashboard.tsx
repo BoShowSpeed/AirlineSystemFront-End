@@ -1,6 +1,6 @@
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { Plane, Users, DollarSign, Clock, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
-import { MOCK_FLIGHTS } from '../../data/mockData';
+import { useFlights } from '../../api/flights';
 import { StatusBadge } from '../../components/StatusBadge';
 
 const SPARKLINE_DATA = [
@@ -26,8 +26,9 @@ const ROUTE_DATA = [
 ];
 
 export default function AdminDashboard() {
-  const liveFlights = MOCK_FLIGHTS.filter(f => f.status !== 'cancelled').slice(0, 6);
-  const alerts = MOCK_FLIGHTS.filter(f => f.status === 'delayed' || f.status === 'cancelled');
+  const { data: flights = [] } = useFlights();
+  const liveFlights = flights.filter(f => f.status !== 'cancelled').slice(0, 6);
+  const alerts = flights.filter(f => f.status === 'delayed' || f.status === 'cancelled');
 
   return (
     <div className="p-6 min-h-screen">

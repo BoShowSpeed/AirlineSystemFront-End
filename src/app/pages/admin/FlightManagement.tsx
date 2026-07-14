@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Plus, Edit3, X, ArrowUpDown, Search, Users } from 'lucide-react';
-import { MOCK_FLIGHTS } from '../../data/mockData';
+import { useFlights } from '../../api/flights';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Flight } from '../../types';
 
 type SortKey = 'number' | 'departureTime' | 'gate' | 'status';
 
 export default function FlightManagement() {
-  const [flights, setFlights] = useState([...MOCK_FLIGHTS]);
+  const { data: fetchedFlights } = useFlights();
+  // Local working copy seeded from the backend. Create/cancel below are
+  // optimistic and client-only until write endpoints are wired up.
+  const [flights, setFlights] = useState<Flight[]>([]);
+  useEffect(() => {
+    if (fetchedFlights) setFlights(fetchedFlights);
+  }, [fetchedFlights]);
   const [sortKey, setSortKey] = useState<SortKey>('departureTime');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [search, setSearch] = useState('');

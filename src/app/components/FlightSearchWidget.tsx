@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, ArrowLeftRight, CalendarDays, Users, ChevronDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { AIRPORTS } from '../data/mockData';
+import { useAirports } from '../api/airports';
 import type { SearchParams, TripType } from '../types';
 
 interface Props {
@@ -12,6 +12,7 @@ interface Props {
 
 export function FlightSearchWidget({ compact = false, defaultValues }: Props) {
   const { setSearchParams } = useApp();
+  const { data: airports = [] } = useAirports();
   const navigate = useNavigate();
   const [tripType, setTripType] = useState<TripType>(defaultValues?.tripType ?? 'one_way');
   const [origin, setOrigin] = useState(defaultValues?.origin ?? '');
@@ -60,7 +61,7 @@ export function FlightSearchWidget({ compact = false, defaultValues }: Props) {
           <div className="relative">
             <select value={origin} onChange={e => setOrigin(e.target.value)} className={selectClass} required>
               <option value="">Select origin</option>
-              {AIRPORTS.map(a => <option key={a} value={a}>{a}</option>)}
+              {airports.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -80,7 +81,7 @@ export function FlightSearchWidget({ compact = false, defaultValues }: Props) {
           <div className="relative">
             <select value={destination} onChange={e => setDestination(e.target.value)} className={selectClass} required>
               <option value="">Select destination</option>
-              {AIRPORTS.map(a => <option key={a} value={a}>{a}</option>)}
+              {airports.map(a => <option key={a} value={a}>{a}</option>)}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>

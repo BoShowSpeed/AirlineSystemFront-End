@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Plane, TicketCheck, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { MOCK_BOOKINGS, MOCK_FLIGHTS } from '../data/mockData';
+import { MOCK_BOOKINGS } from '../data/mockData';
 import { StatusBadge } from '../components/StatusBadge';
 import { FlightSearchWidget } from '../components/FlightSearchWidget';
 
